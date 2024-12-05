@@ -14,15 +14,14 @@ s=[[u in conditions for u in zip(i, i[1:])] for i in q]
 #print(s)
 
 s = [(q[i],[o for o,b in enumerate(k) if not b]) for i, k in enumerate(s) if False in k]
-k = 0
-for x, i in s:
-    while True:
-        for u in i:
-            x = x[:u] + x[u:u+2][::-1] + x[u+2:]
-        s=[u in conditions for u in zip(x, x[1:])]
-        if False not in s:
-            k += x[int(len(x)/2)]
-            break
-        else:
-            i = [o for o,b in enumerate(s) if not b]
-print(k)
+
+def order(l_nums, indices):
+    if indices:
+        for index in indices:
+            l_nums = l_nums[:index] + l_nums[index:index+2][::-1] + l_nums[index+2:]
+        l_nums = order(l_nums, [i for i, cond in enumerate([tp in conditions for tp in zip(l_nums, l_nums[1:])]) if not cond])
+    return l_nums
+
+s = [order(x, i) for x, i in s]
+s=sum([p[int(len(p)/2)] for p in s])
+print(s)
