@@ -1,5 +1,8 @@
 import sys
-from collections import deque
+import os
+from itertools import pairwise
+
+level = int(os.environ.get("LEVEL", 1))
 
 def get_cond():
     while (line := next(sys.stdin).strip()):
@@ -7,21 +10,23 @@ def get_cond():
 
 conditions=[(int(x), int(y)) for x, y in get_cond()]
 
-q=[[int(x.strip()) for x in line.split(",")] for line in sys.stdin]
-s=[[u in conditions for u in zip(i, i[1:])] for i in q]
+q=[list(map(int, line.split(","))) for line in sys.stdin]
+s=[list(map(lambda b: b in conditions, pairwise(i))) for i in q]
+ 
+match level:
 
-#s=sum([q[i][int(len(q[i])/2)] for i, k in enumerate(s) if False not in k])
-#print(s)
+    case 1:
+        print(sum([j[len(j)//2] for j, k in zip(q,s) if False not in k]))
 
-s = [(q[i],[o for o,b in enumerate(k) if not b]) for i, k in enumerate(s) if False in k]
+    case 2:
+        s = [(j,[o for o,b in enumerate(k) if not b]) for j, k in zip(q,s) if False in k]
 
-def order(l_nums, indices):
-    if indices:
-        for index in indices:
-            l_nums = l_nums[:index] + l_nums[index:index+2][::-1] + l_nums[index+2:]
-        l_nums = order(l_nums, [i for i, cond in enumerate([tp in conditions for tp in zip(l_nums, l_nums[1:])]) if not cond])
-    return l_nums
+        def order(l_nums, indices):
+            if indices:
+                for index in indices:
+                    l_nums = l_nums[:index] + l_nums[index:index+2][::-1] + l_nums[index+2:]
+                l_nums = order(l_nums, [i for i, cond in enumerate([tp in conditions for tp in pairwise(l_nums)]) if not cond])
+            return l_nums
 
-s = [order(x, i) for x, i in s]
-s=sum([p[int(len(p)/2)] for p in s])
-print(s)
+        s = [order(x, i) for x, i in s]
+        print(sum([p[len(p)//2] for p in s]))

@@ -1,5 +1,5 @@
-import sys
-from itertools import groupby
+import sys, operator
+from itertools import groupby, pairwise, starmap
 
 in_d = [[int(n) for n in line.strip().split()] for line in sys.stdin]
 
@@ -12,7 +12,7 @@ def diff_list(diff_list):
 
 # PART 1 & 2
 part1, part2 = 0, 0
-res = groupby(sorted([[(x-y) for x, y in zip(l[1:], l[:-1])] for l in in_d], key=diff_list), diff_list) # difference
+res = groupby(sorted([list(starmap(operator.sub, pairwise(l))) for l in in_d], key=diff_list), diff_list) # difference
 for k, g in res:
     if k:
         part1 = len(list(g))
