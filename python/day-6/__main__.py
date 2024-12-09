@@ -1,50 +1,80 @@
 import sys, re
 from collections import deque
-from itertools import pairwise, islice
+from itertools import pairwise, islice, product
 
-rows = [tuple(line.strip()) for line in sys.stdin]
-cols = list(zip(*rows))
+rows = [line for line in map(str.strip, sys.stdin)]
+cols = ["".join(row) for row in zip(*rows)]
 
-init_pos = (0, 0) # col, row
-for col, c in enumerate(cols):
-    for row, p in enumerate(c):
-        if p == "^":
-            init_pos = (col, row)
+for y, line in enumerate(rows):
+    if m := re.search(r'\^', line):
+        x = m.start()
+        break
 
-col, row = init_pos
-positions = set()
-stones = []
-try:
-    while True:
-        d=iter(cols[col][:row][::-1])
-        while (r:=next(d)) != "#":
-            positions.add((col,row))
-            row -= 1
-        stones.append((col, row-1))
+positions = []
+while True:
+    if m := re.search(r'#', cols[x][:y]):
+        positions += [(x, ny) for ny in range(y,m.end(),-1)]
+        y = m.end()
+    else:
+        break
 
-        d=iter(rows[row][col+1:])
-        while (r:=next(d)) != "#":
-            positions.add((col,row))
-            col += 1
-        stones.append((col+1, row))
+    if m := re.search(r'#', rows[y][x+1:]):
+        positions += [(nx, y) for nx in range(x, x+m.start(),1)]
+        x += m.start()
+    else:
+        break
 
-        d=iter(cols[col][row+1:])
-        while (r:=next(d)) != "#":
-            positions.add((col,row))
-            row += 1
-        stones.append((col, row+1))
+    if m := re.search(r'#', cols[x][y+1:]):
+        positions += [(x, ny) for ny in range(y, y+m.start(),1)]
+        y += m.start()
+    else:
+        break
 
-        d=iter(rows[row][:col][::-1])
-        while (r:=next(d)) != "#":
-            positions.add((col,row))
-            col -= 1
-        stones.append((col-1, row))
-        positions.add((col,row))
-except:
-    print(len(positions)+1)
+    if m := re.search(r'#', rows[y][:x]):
+        positions += [(nx, y) for nx in range(x,m.end(),-1)]
+        x = m.end()
+    else:
+        positions += [(nx, y) for nx in range(x,m.end(),-1)]
+        break
 
-print(stones, init_pos)
-print(len(stones))
+print(positions)
+
+#x, y = init_pos
+#positions = []
+#stones = []
+#try:
+#    while True:
+#        d=iter(cols[x][:y][::-1])
+#        while (r:=next(d)) != "#":
+#            positions.append((x,y))
+#            y -= 1
+#        stones.append((x, y-1))
+#
+#        d=iter(rows[y][x+1:])
+#        while (r:=next(d)) != "#":
+#            positions.append((x,y))
+#            x += 1
+#        stones.append((x+1, y))
+#
+#        d=iter(cols[x][y+1:])
+#        while (r:=next(d)) != "#":
+#            positions.append((x,y))
+#            y += 1
+#        stones.append((x, y+1))
+#
+#        d=iter(rows[y][:x][::-1])
+#        while (r:=next(d)) != "#":
+#            positions.append((x,y))
+#            x -= 1
+#        stones.append((x-1, y))
+#        positions.append((x,y))
+#except:
+#    print(len(set(positions))+1)
+#    print(positions)
+#
+#for chunk in [stones[x:x+3] for x in range(len(stones)-2)]:
+#    print(chunk)
+#print(len(stones))
 #print([(y[0]-x[0], y[1]-x[1]) for x, y in pairwise(stones)])
 
-print([(stones[x:x+3]+[((stones[x+(x%3)][0]-stones[x+((x+1)%3)][0]+stones[x+((x+2)%3)][0])%10, (stones[x+(x%3)][1]-stones[x+((x+1)%3)][1]+stones[x+((x+2)%3)][1]) % 10 )]) for x in range(len(stones)-2)])
+#print([(stones[x:x+3]+[((stones[x+(x%3)][0]-stones[x+((x+1)%3)][0]+stones[x+((x+2)%3)][0])%10, (stones[x+(x%3)][1]-stones[x+((x+1)%3)][1]+stones[x+((x+2)%3)][1]) % 10 )]) for x in range(len(stones)-2)])
